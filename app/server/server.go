@@ -20,12 +20,13 @@ import (
 
 // Rest implement http api invoking remote execution for requested tasks
 type Rest struct {
-	Listen      string
-	Version     string
-	SecretKey   string
-	Config      Config
-	Runner      Runner
-	UpdateDelay time.Duration
+	Listen       string
+	Version      string
+	SecretKey    string
+	Config       Config
+	Runner       Runner
+	UpdateDelay  time.Duration
+	WriteTimeout time.Duration
 }
 
 // Config declares command loader from config for given tasks
@@ -46,7 +47,7 @@ func (s *Rest) Run(ctx context.Context) error {
 		Addr:              s.Listen,
 		Handler:           s.router(),
 		ReadHeaderTimeout: time.Second,
-		WriteTimeout:      30 * time.Second,
+		WriteTimeout:      s.WriteTimeout * time.Second,
 		IdleTimeout:       time.Second,
 		ErrorLog:          log.ToStdLogger(log.Default(), "WARN"),
 	}
