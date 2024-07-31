@@ -24,6 +24,31 @@ func TestRest_Run(t *testing.T) {
 	assert.Equal(t, "http: Server closed", err.Error())
 }
 
+func TestRest_taskTimeout(t *testing.T) {
+
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "sleep 10", true
+	}}
+
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
+		println("sleep")
+		time.Sleep(10 * time.Second)
+		println("wake")
+		return nil
+	}}
+
+	srv := Rest{Listen: "localhost:54009", Version: "v1", Config: conf, SecretKey: "12345",
+		Runner: runner, UpdateDelay: time.Millisecond * 200, Timeout: time.Millisecond * 2000}
+
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+	println("start request")
+	resp, err := http.Get(ts.URL + "/update/task1/12345")
+	println("end")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
+}
+
 func TestRest_taskCtrl(t *testing.T) {
 	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
 		return "echo " + name, true
