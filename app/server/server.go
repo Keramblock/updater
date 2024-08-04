@@ -47,7 +47,7 @@ func (s *Rest) Run(ctx context.Context) error {
 		Addr:              s.Listen,
 		Handler:           s.router(),
 		ReadHeaderTimeout: time.Second,
-		WriteTimeout:      s.Timeout,
+		WriteTimeout:      s.Timeout + 10*time.Second, // Give enough time to finish the task and respond
 		IdleTimeout:       time.Second,
 		ErrorLog:          log.ToStdLogger(log.Default(), "WARN"),
 	}
